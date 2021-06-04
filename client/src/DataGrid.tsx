@@ -1,5 +1,4 @@
-import React from "react";
-
+import React, { useState, useEffect, useMemo } from "react";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import Chip from "@material-ui/core/Chip";
@@ -16,8 +15,8 @@ import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import SubdirectoryArrowRightIcon from "@material-ui/icons/SubdirectoryArrowRight";
-
 import { useListEntriesQuery } from "./generated-api";
+import PopUp from "./components/PopUp";
 
 const useStyles = makeStyles({
   table: {
@@ -27,24 +26,23 @@ const useStyles = makeStyles({
 
 function DataGrid() {
   const classes = useStyles();
-  const [sizeGt, setSizeGt] = React.useState(0);
-  const [sizeLt, setSizeLt] = React.useState(0);
-  const [page, setPage] = React.useState(1);
-  const [directory, setDirectory] = React.useState(false);
-  const [fileBox, setFileBox] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [boxField, setBoxField] = React.useState("");
-  const [currentPath, setCurrentPath] = React.useState("/");
-  const [popUp, setPopUp] = React.useState("false");
-  const [history, updateHistory] = React.useState<
-    { id: string; path: string }[]
-  >([
+  const [sizeGt, setSizeGt] = useState(0);
+  const [sizeLt, setSizeLt] = useState(0);
+  const [page, setPage] = useState(1);
+  const [directory, setDirectory] = useState(false);
+  const [fileBox, setFileBox] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [boxField, setBoxField] = useState("");
+  const [currentPath, setCurrentPath] = useState("/");
+  const [popUp, setPopUp] = useState(false);
+
+  const [history, updateHistory] = useState<{ id: string; path: string }[]>([
     {
       id: "/",
       path: "/",
     },
   ]);
-  console.log("directoryyyyyy", directory);
+
   const { data, loading, error } = useListEntriesQuery({
     variables: {
       path: currentPath,
@@ -73,14 +71,11 @@ function DataGrid() {
     },
   });
 
-  console.log(error, "error");
-
-  React.useEffect(() => {
+  useEffect(() => {
     setCurrentPath(history[history.length - 1].path);
 
     checkingBox();
   }, [history, directory, fileBox]);
-  console.log("this is history", history);
 
   const checkingBox = () => {
     if (!directory && !fileBox) {
@@ -93,7 +88,7 @@ function DataGrid() {
       alert("You cannot select two");
     }
   };
-  const rows = React.useMemo(() => {
+  const rows = useMemo(() => {
     const dataRows = data?.listEntries?.entries ?? ([] as any);
 
     return [
@@ -111,7 +106,7 @@ function DataGrid() {
     ];
   }, [history.length, data?.listEntries?.entries]);
 
-  const rowCount = React.useMemo(() => {
+  const rowCount = useMemo(() => {
     const totalUpDirRows =
       currentPath === "/"
         ? 0
@@ -134,193 +129,216 @@ function DataGrid() {
 
   const handleDirectory = () => {
     setDirectory(!directory);
-    console.log("DOES THIS WORK");
   };
 
   const handleFile = () => {
     setFileBox(!fileBox);
   };
-  console.log(data, "DATA");
-  console.log(rows.length, "ROWS");
 
   return (
-    <Box display="flex" height="100%">
-      <Box flexGrow={1}>
-        <Paper>
-          <Toolbar>
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              width="100%"
-            >
-              <Typography variant="h6">File Browser</Typography>
+    <div>
+      <Box display="flex" height="100%">
+        <Box flexGrow={1}>
+          <Paper>
+            <Toolbar>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                width="100%"
+              >
+                <Typography variant="h6">File Browser</Typography>
 
-              <input
-                className="searchInput"
-                type="text"
-                placeholder="Search By Name"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {/* <img
+                <input
+                  className="searchInput"
+                  type="text"
+                  placeholder="Search By Name"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {/* <img
                 className="searchIcon"
                 src="https://img.icons8.com/cotton/64/000000/search--v1.png"
                 alt=""
               /> */}
 
-              <label htmlFor="">
-                <input
-                  type="checkbox"
-                  value={directory}
-                  onChange={handleDirectory}
-                />
-                Directory
-              </label>
-              <label htmlFor="">
-                <input type="checkbox" value={fileBox} onChange={handleFile} />
-                File
-              </label>
+                <label htmlFor="">
+                  <input
+                    type="checkbox"
+                    value={directory}
+                    onChange={handleDirectory}
+                  />
+                  Directory
+                </label>
+                <label htmlFor="">
+                  <input
+                    type="checkbox"
+                    value={fileBox}
+                    onChange={handleFile}
+                  />
+                  File
+                </label>
 
-              <Box>
-                <Chip
-                  color="primary"
-                  onDelete={handleDelete}
-                  label={
-                    <Box>
-                      <strong>File Size &gt;</strong>
-                      <input
-                        onChange={(e) =>
-                          setSizeGt(Number(e.currentTarget.value))
-                        }
-                        type="number"
-                        value={sizeGt}
-                        style={{
-                          marginLeft: 8,
-                          background: "transparent",
-                          color: "white",
-                          border: "none",
-                          width: 80,
-                        }}
-                      />
-                    </Box>
-                  }
-                />
+                <Box>
+                  <Chip
+                    color="primary"
+                    onDelete={handleDelete}
+                    label={
+                      <Box>
+                        <strong>File Size &gt;</strong>
+                        <input
+                          onChange={(e) =>
+                            setSizeGt(Number(e.currentTarget.value))
+                          }
+                          type="number"
+                          value={sizeGt}
+                          style={{
+                            marginLeft: 8,
+                            background: "transparent",
+                            color: "white",
+                            border: "none",
+                            width: 80,
+                          }}
+                        />
+                      </Box>
+                    }
+                  />
+                </Box>
+                <Box>
+                  <Chip
+                    color="primary"
+                    onDelete={handleDelete}
+                    label={
+                      <Box>
+                        <strong>File Size &lt;</strong>
+                        <input
+                          onChange={(e) =>
+                            setSizeLt(Number(e.currentTarget.value))
+                          }
+                          type="number"
+                          value={sizeLt}
+                          style={{
+                            marginLeft: 8,
+                            background: "transparent",
+                            color: "white",
+                            border: "none",
+                            width: 80,
+                          }}
+                        />
+                      </Box>
+                    }
+                  />
+                </Box>
               </Box>
-              <Box>
-                <Chip
-                  color="primary"
-                  onDelete={handleDelete}
-                  label={
-                    <Box>
-                      <strong>File Size &lt;</strong>
-                      <input
-                        onChange={(e) =>
-                          setSizeLt(Number(e.currentTarget.value))
-                        }
-                        type="number"
-                        value={sizeLt}
-                        style={{
-                          marginLeft: 8,
-                          background: "transparent",
-                          color: "white",
-                          border: "none",
-                          width: 80,
-                        }}
-                      />
-                    </Box>
-                  }
+            </Toolbar>
+            {/* If page is still retreiving data then we will show loading icon instead of the table */}
+            {loading ? (
+              <div className="loader">
+                <img
+                  className="loadingIcon"
+                  src="https://img.icons8.com/fluent-systems-regular/96/000000/spinner-frame-2.png"
                 />
-              </Box>
-            </Box>
-          </Toolbar>
-          {/* If page is still retreiving data then we will show loading icon instead of the table */}
-          {loading ? (
-            <div className="loader">
-              <img
-                className="loadingIcon"
-                src="https://img.icons8.com/fluent-systems-regular/96/000000/spinner-frame-2.png"
-              />
-            </div>
-          ) : (
-            <TableContainer>
-              <Table
-                className={classes.table}
-                size="small"
-                aria-label="a dense table"
-              >
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Path</TableCell>
-                    <TableCell align="right">Name</TableCell>
-                    <TableCell align="right">Type</TableCell>
-                    <TableCell align="right">Size</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.length === 0 ? (
-                    <div className="noResults">There aren't any Main Files</div>
-                  ) : (
-                    rows.map(({ path, __typename, name, size, id }) => {
-                      const isUpDir = __typename === "UP_DIR";
-                      return (
-                        <TableRow key={id}>
-                          <TableCell component="th" scope="row">
-                            <Button
-                              color="primary"
-                              startIcon={
-                                isUpDir ? (
-                                  <MoreHorizIcon />
-                                ) : __typename === "File" ? null : (
-                                  <SubdirectoryArrowRightIcon />
-                                )
-                              }
-                              onClick={() => {
-                                updateHistory((h) => {
-                                  if (isUpDir && h.length > 1) {
-                                    setPage(1);
-                                    return [...h.splice(0, h.length - 1)];
-                                  } else {
-                                    console.log("ive been hit");
-                                    setBoxField("");
-                                    setSearchTerm("");
-                                    return [...h, { id: path, path }];
-                                  }
-                                });
-                              }}
-                            >
-                              {!isUpDir ? path : ""}
-                            </Button>
-                          </TableCell>
-                          <TableCell align="right">
-                            {isUpDir ? "_" : name}
-                          </TableCell>
-                          <TableCell align="right">
-                            {isUpDir ? "_" : __typename}
-                          </TableCell>
-                          <TableCell align="right">
-                            {isUpDir ? "_" : size}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
+              </div>
+            ) : (
+              <TableContainer>
+                <Table
+                  className={classes.table}
+                  size="small"
+                  aria-label="a dense table"
+                >
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Path</TableCell>
+                      <TableCell align="right">Name</TableCell>
+                      <TableCell align="right">Type</TableCell>
+                      <TableCell align="right">Size</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {/* if there arent any MAIN files on the main page after filtering by name we will get a message at the end of the table */}
+                    {rows.length === 0 ? (
+                      <div className="noResults">
+                        There aren't any Main Files
+                      </div>
+                    ) : (
+                      rows.map(({ path, __typename, name, size, id }) => {
+                        const isUpDir = __typename === "UP_DIR";
+                        return (
+                          <TableRow key={id}>
+                            <TableCell component="th" scope="row">
+                              <Button
+                                color="primary"
+                                startIcon={
+                                  isUpDir ? (
+                                    <MoreHorizIcon />
+                                  ) : __typename === "File" ? null : (
+                                    <SubdirectoryArrowRightIcon />
+                                  )
+                                }
+                                onClick={() => {
+                                  updateHistory((h) => {
+                                    if (isUpDir && h.length > 1) {
+                                      setPage(1);
+                                      return [...h.splice(0, h.length - 1)];
+                                    } else {
+                                      if (
+                                        history.length === 3 &&
+                                        history[1]?.id === "/documents"
+                                      ) {
+                                        setPopUp(true);
+                                      }
+                                      if (
+                                        history.length === 2 &&
+                                        history[1].id === "/tmp"
+                                      ) {
+                                        setPopUp(true);
+                                      }
 
-          <TablePagination
-            rowsPerPageOptions={[]}
-            component="div"
-            count={rowCount}
-            rowsPerPage={25}
-            page={page - 1}
-            onChangePage={handleChangePage}
-          />
-        </Paper>
+                                      setBoxField("");
+                                      setSearchTerm("");
+                                      setDirectory(false);
+                                      setFileBox(false);
+                                      return [...h, { id: path, path }];
+                                    }
+                                    // above resets state of filters so that we can filter throughout the paths
+                                  });
+                                }}
+                              >
+                                {!isUpDir ? path : ""}
+                              </Button>
+                            </TableCell>
+                            <TableCell align="right">
+                              {isUpDir ? "_" : name}
+                            </TableCell>
+                            <TableCell align="right">
+                              {isUpDir ? "_" : __typename}
+                            </TableCell>
+                            <TableCell align="right">
+                              {isUpDir ? "_" : size}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+
+            <TablePagination
+              rowsPerPageOptions={[]}
+              component="div"
+              count={rowCount}
+              rowsPerPage={25}
+              page={page - 1}
+              onChangePage={handleChangePage}
+            />
+          </Paper>
+        </Box>
       </Box>
-    </Box>
+      {/* Popup will be displayed when user clicks on file within documents */}
+      {popUp ? <PopUp setPopUp={setPopUp} /> : ""}
+    </div>
   );
 }
 

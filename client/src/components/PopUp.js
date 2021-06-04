@@ -11,8 +11,9 @@ function PopUp({ setPopUp }) {
     <div>
       <div className="popUp" ref={modalRef} onClick={handleExit}>
         <div className="popUpInner">
+          <div className="displayFile">Display File Information Here </div>
           <button className="exit" onClick={() => setPopUp(false)}>
-            X
+            Exit
           </button>
         </div>
       </div>
