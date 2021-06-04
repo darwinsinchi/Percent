@@ -1,6 +1,6 @@
-import { DateTime } from 'luxon';
-import { getRandomInt, getRandomString, pickRandom } from './util/rand';
-import { Iterator, iterate } from './util/iter';
+import { DateTime } from "luxon";
+import { getRandomInt, getRandomString, pickRandom } from "./util/rand";
+import { Iterator, iterate } from "./util/iter";
 
 export type Entry = File | Directory;
 
@@ -23,15 +23,21 @@ export interface Directory extends FileSystemNode {
   entries: Entry[];
 }
 
-const file: Pick<File, 'isFile' | 'isDirectory'> = { isFile: true, isDirectory: false };
-const directory: Pick<Directory, 'isFile' | 'isDirectory'> = { isFile: false, isDirectory: true };
+const file: Pick<File, "isFile" | "isDirectory"> = {
+  isFile: true,
+  isDirectory: false,
+};
+const directory: Pick<Directory, "isFile" | "isDirectory"> = {
+  isFile: false,
+  isDirectory: true,
+};
 
 const mkFile = (name: string, size: number, lastModified: DateTime): File => {
   return {
     ...file,
     name,
     size,
-    lastModified: lastModified.toISO()
+    lastModified: lastModified.toISO(),
   };
 };
 
@@ -42,16 +48,16 @@ const mkInvoices = (): Entry[] => {
     const date = DateTime.fromISO(`2020-${month}-15T10:00:00.000Z`);
     files.push({
       ...file,
-      name: `${date.toFormat('MMMM')}.pdf`,
+      name: `${date.toFormat("MMMM")}.pdf`,
       size: getRandomInt(1000000, 12000000),
-      lastModified: date.toISO()
+      lastModified: date.toISO(),
     });
   }
 
   return files;
 };
 
-const extensions = ['txt', 'pdf', 'csv', 'png', 'jpeg', 'ts'];
+const extensions = ["txt", "pdf", "csv", "png", "jpeg", "ts"];
 const mkRandomFile = (): File => {
   const name = getRandomString(12);
   const ext = pickRandom(extensions);
@@ -59,7 +65,7 @@ const mkRandomFile = (): File => {
     ...file,
     name: `${name}.${ext}`,
     size: getRandomInt(0, 12000000),
-    lastModified: DateTime.utc().toISO()
+    lastModified: DateTime.utc().toISO(),
   };
 };
 
@@ -69,44 +75,45 @@ const mapRandomFile = <T>(iterator: Iterable<T>) => {
 
 export const fileSystem: Directory = {
   ...directory,
-  name: '',
+  name: "",
   entries: [
     {
       ...directory,
-      name: 'documents',
+      name: "documents",
       entries: [
         {
           ...directory,
-          name: 'invoices',
-          entries: mkInvoices()
-        }
-      ]
+          name: "invoices",
+          entries: mkInvoices(),
+        },
+      ],
     },
     {
       ...directory,
-      name: 'tmp',
-      entries: Array.from(mapRandomFile(iterate(64)))
+      name: "tmp",
+      entries: Array.from(mapRandomFile(iterate(64))),
     },
-    mkFile('README.md', 768, DateTime.utc())
-  ]
+    mkFile("README.md", 768, DateTime.utc()),
+  ],
 };
 
 export const lookupPath = (pathSegments: string[]): Entry => {
-  return pathSegments.reduce(
-    (entry, pathSegment) => {
-      if (pathSegment === '') {
-        return entry;
-      } else if (entry.isFile) {
-        throw new Error(`Cannot get subdirectory ${pathSegment} from ${entry.name} because it is a file`);
-      } else {
-        const sub = entry.entries.find(e => e.name === pathSegment);
-        if (!sub) {
-          throw new Error(`${entry.name} does not have a subdirectory ${pathSegment}`);
-        }
-
-        return sub;
+  return pathSegments.reduce((entry, pathSegment) => {
+    if (pathSegment === "") {
+      return entry;
+    } else if (entry.isFile) {
+      throw new Error(
+        `Cannot get subdirectory ${pathSegment} from ${entry.name} because it is a file`
+      );
+    } else {
+      const sub = entry.entries.find((e) => e.name === pathSegment);
+      if (!sub) {
+        throw new Error(
+          `${entry.name} does not have a subdirectory ${pathSegment}`
+        );
       }
-    },
-    fileSystem as Entry
-  );
+
+      return sub;
+    }
+  }, fileSystem as Entry);
 };

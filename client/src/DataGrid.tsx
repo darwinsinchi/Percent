@@ -268,7 +268,6 @@ function DataGrid() {
                           <TableCell component="th" scope="row">
                             <Button
                               color="primary"
-                              disabled={__typename === "File"}
                               startIcon={
                                 isUpDir ? (
                                   <MoreHorizIcon />
